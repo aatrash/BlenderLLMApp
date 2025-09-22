@@ -10,10 +10,10 @@ PORT = 5000
 # Shared queue for commands coming from the socket
 command_queue = queue.Queue()
 
-
-# ------------------------------------------------------------
-# 1. Blender-side: Execute a single command
-# ------------------------------------------------------------
+# Parse and execute a single command
+# This is the set of actions the agent is currently aware of.  This can be extended over time to add more
+# Capabilities to the agent.
+# Each action has a name and a set of parameters
 def execute_command(cmd):
     action = cmd.get("action")
     params = cmd.get("params", {})
@@ -163,9 +163,7 @@ def execute_command(cmd):
         return {"status": "error", "message": str(e)}
 
 
-# ------------------------------------------------------------
-# 2. Thread: listen for socket connections and enqueue commands
-# ------------------------------------------------------------
+# Thread: listen for socket connections and enqueue commands
 def socket_listener():
     print(f"Blender socket server listening on {HOST}:{PORT}")
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -191,9 +189,7 @@ def handle_client(conn, addr):
             conn.close()
 
 
-# ------------------------------------------------------------
-# 3. Blender timer: process queued commands without blocking GUI
-# ------------------------------------------------------------
+# Blender timer: process queued commands without blocking GUI
 def process_queue():
     try:
         while True:
@@ -207,9 +203,7 @@ def process_queue():
     return 0.1
 
 
-# ------------------------------------------------------------
-# 4. Start everything
-# ------------------------------------------------------------
+# Start everything
 def start():
     threading.Thread(target=socket_listener, daemon=True).start()
     bpy.app.timers.register(process_queue)
